@@ -114,8 +114,16 @@ export async function registerDiscordCommands(client: Client) {
         }
 
         const expiryDate = expiresAt.toLocaleDateString("pl-PL");
+        
+        // Send DM to user
+        try {
+          await user.send(`✅ **Otrzymałeś dostęp do MambaReceipts!**\n\n📅 **Dostęp na:** ${days} dni\n⏰ **Wygasa:** ${expiryDate}\n\nMożesz teraz korzystać z kanałów MambaReceipts! 🐍`);
+        } catch (dmError) {
+          console.error("[Discord] Failed to send DM:", dmError);
+        }
+        
         await interaction.reply({
-          content: `✅ Przydzielono dostęp użytkownikowi ${user.tag}!\n📅 Wygasa: **${expiryDate}**`,
+          content: `✅ Przydzielono dostęp użytkownikowi ${user.tag}!\n📅 Wygasa: **${expiryDate}**\n💬 Wiadomość wysłana na PV`,
           ephemeral: true,
         });
       } catch (error: any) {
