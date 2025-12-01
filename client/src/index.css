@@ -10,13 +10,13 @@
   --radius-xl: calc(var(--radius) + 4px);
   
   /* Dark Theme Base */
-  --color-background: hsl(240 10% 3.9%);
+  --color-background: hsl(0 0% 0%);
   --color-foreground: hsl(0 0% 98%);
   
-  --color-card: hsl(240 10% 3.9%);
+  --color-card: hsl(0 0% 0%);
   --color-card-foreground: hsl(0 0% 98%);
   
-  --color-popover: hsl(240 10% 3.9%);
+  --color-popover: hsl(0 0% 0%);
   --color-popover-foreground: hsl(0 0% 98%);
   
   /* Neon Green Primary */

@@ -107,7 +107,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 bg-black/40 backdrop-blur-sm mt-20">
+      <footer className="border-t border-white/5 bg-black backdrop-blur-sm mt-20">
         <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2 opacity-70">
             <img src={logo} alt="Mamba" className="h-6 w-6 grayscale" />
