@@ -16,6 +16,7 @@ export interface IStorage {
   getOrderByStripeSessionId(sessionId: string): Promise<Order | undefined>;
   grantDiscordAccess(access: InsertDiscordAccess): Promise<DiscordAccess>;
   getDiscordAccess(email: string): Promise<DiscordAccess | undefined>;
+  revokeDiscordAccess(email: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -124,6 +125,18 @@ export class MemStorage implements IStorage {
     return Array.from(this.discordAccesses.values()).find(
       (access) => access.email === email
     );
+  }
+
+  async revokeDiscordAccess(email: string): Promise<boolean> {
+    const keys = Array.from(this.discordAccesses.keys());
+    for (const key of keys) {
+      const access = this.discordAccesses.get(key);
+      if (access && access.email === email) {
+        this.discordAccesses.delete(key);
+        return true;
+      }
+    }
+    return false;
   }
 }
 

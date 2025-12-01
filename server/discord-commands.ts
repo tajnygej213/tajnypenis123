@@ -12,19 +12,37 @@ import {
 
 const grantAccessCommand = new SlashCommandBuilder()
   .setName("grantaccess")
-  .setDescription("Request MambaReceipts access")
+  .setDescription("[ADMIN] Grant MambaReceipts access to a user")
   .addStringOption((option) =>
     option
       .setName("email")
-      .setDescription("Email associated with your purchase")
+      .setDescription("Email associated with the purchase")
       .setRequired(true)
   )
   .addStringOption((option) =>
     option
       .setName("orderid")
-      .setDescription("Your order ID from the purchase")
+      .setDescription("Order ID from the purchase")
       .setRequired(true)
-  );
+  )
+  .setDefaultMemberPermissions(0); // No default permissions - must be explicitly set
+
+const revokeAccessCommand = new SlashCommandBuilder()
+  .setName("odbierz")
+  .setDescription("[ADMIN] Revoke MambaReceipts access from a user")
+  .addStringOption((option) =>
+    option
+      .setName("email")
+      .setDescription("Email to revoke access from")
+      .setRequired(true)
+  )
+  .addUserOption((option) =>
+    option
+      .setName("user")
+      .setDescription("Discord user to remove the role from")
+      .setRequired(true)
+  )
+  .setDefaultMemberPermissions(0);
 
 export async function registerDiscordCommands(client: Client) {
   client.on(Events.InteractionCreate, async (interaction) => {
@@ -70,6 +88,54 @@ export async function registerDiscordCommands(client: Client) {
       modal.addComponents(firstActionRow, secondActionRow, thirdActionRow);
 
       await interaction.showModal(modal);
+    }
+
+    if (interaction.commandName === "odbierz") {
+      await interaction.deferReply({ ephemeral: true });
+
+      try {
+        const email = interaction.options.getString("email");
+        const user = interaction.options.getUser("user");
+
+        if (!email || !user) {
+          await interaction.editReply({
+            content: "❌ Email and user are required",
+          });
+          return;
+        }
+
+        // Call the revoke access API
+        const response = await fetch(
+          `${process.env.API_BASE_URL || "http://localhost:5000"}/api/discord/revoke-access`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: email.toLowerCase(),
+              discordUserId: user.id,
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          const error = await response.json();
+          await interaction.editReply({
+            content: `❌ Error revoking access: ${error.error}`,
+          });
+          return;
+        }
+
+        await interaction.editReply({
+          content: `✅ Access revoked for ${user.tag} (${email})`,
+        });
+      } catch (error: any) {
+        console.error("Revoke access error:", error);
+        await interaction.editReply({
+          content: `❌ Error processing your request: ${error.message}`,
+        });
+      }
     }
   });
 
@@ -138,13 +204,13 @@ export async function registerSlashCommands(
 
     console.log("Registering slash commands...");
 
-    const commands = [grantAccessCommand.toJSON()];
+    const commands = [grantAccessCommand.toJSON(), revokeAccessCommand.toJSON()];
 
     await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
       body: commands,
     });
 
-    console.log("Successfully registered slash commands");
+    console.log("Successfully registered slash commands: /grantaccess, /odbierz");
   } catch (error) {
     console.error("Error registering slash commands:", error);
   }

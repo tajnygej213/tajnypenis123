@@ -232,5 +232,45 @@ export async function registerRoutes(
     }
   });
 
+  // Revoke Discord access endpoint
+  app.post("/api/discord/revoke-access", async (req, res) => {
+    try {
+      const { email, discordUserId } = req.body;
+
+      if (!email || !discordUserId) {
+        res.status(400).json({ error: "Missing required fields" });
+        return;
+      }
+
+      // Revoke access from database
+      const revoked = await storage.revokeDiscordAccess(email.toLowerCase());
+
+      if (!revoked) {
+        res.status(404).json({ error: "No active access found for this email" });
+        return;
+      }
+
+      // Remove Discord role (optional - if role IDs are configured)
+      const guildId = process.env.DISCORD_GUILD_ID;
+      const roleId = process.env.DISCORD_RECEIPTS_ROLE_ID;
+
+      if (guildId && roleId) {
+        const { removeDiscordRole } = await import("./discord-bot");
+        const roleRemoved = await removeDiscordRole(discordUserId, guildId, roleId);
+        if (!roleRemoved) {
+          console.warn("Failed to remove Discord role, but access revoked");
+        }
+      }
+
+      res.json({
+        success: true,
+        message: "Access revoked successfully",
+      });
+    } catch (error: any) {
+      console.error("Discord access revoke error:", error);
+      res.status(400).json({ error: error.message || "Failed to revoke access" });
+    }
+  });
+
   return httpServer;
 }
