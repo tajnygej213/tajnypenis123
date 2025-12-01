@@ -95,7 +95,7 @@ export default function Home() {
               title="MambaObywatel"
               price="200 zł"
               description="Full generator suite with advanced features. Complete automation toolkit."
-              video={obywatelVideo}
+              image={obywatelBg}
               features={[
                 "Full Generator Access",
                 "Advanced Customization",
