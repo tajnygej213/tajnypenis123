@@ -7,9 +7,9 @@ export const translations = {
       login: "LOGOWANIE"
     },
     hero: {
-      title: "AUTOMATYZUJ SWOJĄ",
-      titleHighlight: "CYFROWĄ TOŻSAMOŚĆ",
-      description: "Premium'owe usługi dla MambaObywatel i MambaReceipts. Natychmiastowa dostawa przez integrację Discord."
+      title: "MAMBA",
+      titleHighlight: "SERVICES",
+      description: "Usługi premium dla MambaObywatel i MambaReceipts. Natychmiastowa dostawa przez integrację Discord."
     },
     products: {
       title: "NASZE PRODUKTY",
