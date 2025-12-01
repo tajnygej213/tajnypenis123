@@ -4,9 +4,20 @@ import { storage } from "./storage";
 import { sendAccessCodeEmail, sendReceiptsEmail, sendTicketEmail } from "./email-service";
 import { grantDiscordRole } from "./discord-bot";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2024-11-20",
-});
+let stripe: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!stripe) {
+    const apiKey = process.env.STRIPE_SECRET_KEY;
+    if (!apiKey) {
+      throw new Error("STRIPE_SECRET_KEY not configured");
+    }
+    stripe = new Stripe(apiKey, {
+      apiVersion: "2024-11-20",
+    });
+  }
+  return stripe;
+}
 
 // Mapping linków Stripe do produktów
 const STRIPE_LINK_MAPPING: { [key: string]: { type: "obywatel" | "receipts"; tier?: "basic" | "premium"; duration?: number } } = {
@@ -40,7 +51,7 @@ export async function setupStripeWebhook(app: Express): Promise<void> {
       let event;
       try {
         const body = req.rawBody as Buffer;
-        event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+        event = getStripe().webhooks.constructEvent(body, sig, webhookSecret);
         console.log("[Stripe] Event verified, type:", event.type);
       } catch (error) {
         console.error("[Stripe] Signature verification failed:", error);
