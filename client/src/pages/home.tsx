@@ -6,18 +6,66 @@ import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/hooks/use-language";
 import { translations } from "@/lib/translations";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import mambaLogo from "@assets/generated_images/futuristic_glowing_green_mamba_snake_logo.png";
 import obywatelBg from "@assets/generated_images/cyberpunk_digital_id_card_abstract_background.png";
 import receiptsBg from "@assets/generated_images/cyberpunk_digital_receipt_abstract_background.png";
 import heroBg from "@assets/generated_images/dark_cyberpunk_digital_grid_hero_background.png";
 import obywatelVideo from "@assets/copy_E3111A92-34FD-401C-9AE1-8359E1F1F619_1764588726011.mov";
 
+type ProductId = "obywatel-app" | "obywatel-pro" | "receipts-month" | "receipts-year";
+
 export default function Home() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [selectedProductView, setSelectedProductView] = useState<ProductId | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<{ name: string; price: string; id: string } | null>(null);
   const [_, setLocation] = useLocation();
   const { language } = useLanguage();
   const t = translations[language];
+
+  const products = [
+    {
+      id: "obywatel-app" as ProductId,
+      title: t.products.obywatelApp.title,
+      price: t.products.obywatelApp.price,
+      description: t.products.obywatelApp.description,
+      video: obywatelVideo,
+      features: t.products.obywatelApp.features,
+      accentColor: "primary" as const,
+      name: "MambaObywatel (App)"
+    },
+    {
+      id: "obywatel-pro" as ProductId,
+      title: t.products.obywatelPro.title,
+      price: t.products.obywatelPro.price,
+      description: t.products.obywatelPro.description,
+      image: obywatelBg,
+      features: t.products.obywatelPro.features,
+      accentColor: "primary" as const,
+      name: "MambaObywatel PRO"
+    },
+    {
+      id: "receipts-month" as ProductId,
+      title: t.products.receiptsMonth.title,
+      price: t.products.receiptsMonth.price,
+      description: t.products.receiptsMonth.description,
+      image: receiptsBg,
+      features: t.products.receiptsMonth.features,
+      accentColor: "secondary" as const,
+      name: "MambaReceipts (Monthly)"
+    },
+    {
+      id: "receipts-year" as ProductId,
+      title: t.products.receiptsYear.title,
+      price: t.products.receiptsYear.price,
+      description: t.products.receiptsYear.description,
+      image: receiptsBg,
+      features: t.products.receiptsYear.features,
+      accentColor: "secondary" as const,
+      name: "MambaReceipts (Annual)"
+    }
+  ];
 
   const handleBuy = (product: { name: string; price: string; id: string }) => {
     setSelectedProduct(product);
@@ -34,6 +82,8 @@ export default function Home() {
       setLocation("/dashboard");
     }
   };
+
+  const selectedProductData = selectedProductView ? products.find(p => p.id === selectedProductView) : null;
 
   return (
     <Layout>
@@ -78,47 +128,81 @@ export default function Home() {
             <div className="h-1 w-20 bg-primary mx-auto rounded-full shadow-[0_0_10px_hsl(142_70%_50%)]" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            <ProductCard 
-              title={t.products.obywatelApp.title}
-              price={t.products.obywatelApp.price}
-              description={t.products.obywatelApp.description}
-              video={obywatelVideo}
-              features={t.products.obywatelApp.features}
-              accentColor="primary"
-              onBuy={() => handleBuy({ name: "MambaObywatel (App)", price: t.products.obywatelApp.price, id: "obywatel-app" })}
-            />
+          {!selectedProductView ? (
+            // Products List
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              {products.map((product) => (
+                <motion.button
+                  key={product.id}
+                  onClick={() => setSelectedProductView(product.id)}
+                  whileHover={{ y: -5 }}
+                  className="p-6 rounded-lg bg-gradient-to-br border transition-all"
+                  style={
+                    product.accentColor === "primary"
+                      ? {
+                          backgroundImage: "linear-gradient(to bottom right, rgba(142, 179, 79, 0.1), rgba(142, 179, 79, 0.05))",
+                          borderColor: "rgba(142, 179, 79, 0.3)"
+                        }
+                      : {
+                          backgroundImage: "linear-gradient(to bottom right, rgba(168, 85, 247, 0.1), rgba(168, 85, 247, 0.05))",
+                          borderColor: "rgba(168, 85, 247, 0.3)"
+                        }
+                  }
+                >
+                  <h3 className={`text-lg font-display font-bold mb-2 ${
+                    product.accentColor === "primary" ? "text-primary" : "text-secondary"
+                  }`}>
+                    {product.title}
+                  </h3>
+                  <p className="text-xl font-mono font-bold mb-3" style={{
+                    color: product.accentColor === "primary" ? "hsl(142 70% 50%)" : "hsl(267 80% 50%)"
+                  }}>
+                    {product.price}
+                  </p>
+                  <p className="text-sm text-zinc-400 line-clamp-2">
+                    {product.description}
+                  </p>
+                </motion.button>
+              ))}
+            </motion.div>
+          ) : (
+            // Selected Product Detail
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="max-w-4xl mx-auto"
+            >
+              <Button
+                onClick={() => setSelectedProductView(null)}
+                variant="ghost"
+                className="mb-8 text-primary hover:text-primary/80 font-display"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Wróć do listy
+              </Button>
 
-            <ProductCard 
-              title={t.products.obywatelPro.title}
-              price={t.products.obywatelPro.price}
-              description={t.products.obywatelPro.description}
-              image={obywatelBg}
-              features={t.products.obywatelPro.features}
-              accentColor="primary"
-              onBuy={() => handleBuy({ name: "MambaObywatel PRO", price: t.products.obywatelPro.price, id: "obywatel-pro" })}
-            />
-
-            <ProductCard 
-              title={t.products.receiptsMonth.title}
-              price={t.products.receiptsMonth.price}
-              description={t.products.receiptsMonth.description}
-              image={receiptsBg}
-              features={t.products.receiptsMonth.features}
-              accentColor="secondary"
-              onBuy={() => handleBuy({ name: "MambaReceipts (Monthly)", price: t.products.receiptsMonth.price, id: "receipts-month" })}
-            />
-
-            <ProductCard 
-              title={t.products.receiptsYear.title}
-              price={t.products.receiptsYear.price}
-              description={t.products.receiptsYear.description}
-              image={receiptsBg}
-              features={t.products.receiptsYear.features}
-              accentColor="secondary"
-              onBuy={() => handleBuy({ name: "MambaReceipts (Annual)", price: t.products.receiptsYear.price, id: "receipts-year" })}
-            />
-          </div>
+              {selectedProductData && (
+                <ProductCard
+                  title={selectedProductData.title}
+                  price={selectedProductData.price}
+                  description={selectedProductData.description}
+                  video={selectedProductData.video}
+                  image={selectedProductData.image}
+                  features={selectedProductData.features}
+                  accentColor={selectedProductData.accentColor}
+                  onBuy={() => handleBuy({
+                    name: selectedProductData.name,
+                    price: selectedProductData.price,
+                    id: selectedProductData.id
+                  })}
+                />
+              )}
+            </motion.div>
+          )}
         </div>
       </section>
 
