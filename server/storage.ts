@@ -52,15 +52,13 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    // Hash password with bcrypt
-    const hashedPassword = await bcrypt.hash(insertUser.password, SALT_ROUNDS);
+    const hashedPassword = bcrypt.hashSync(insertUser.password, SALT_ROUNDS);
     const user: User = { 
       id,
-      username: insertUser.username,
+      email: insertUser.email,
       password: hashedPassword
     };
     this.users.set(id, user);
-    // Return user without password
     return user;
   }
 
@@ -68,10 +66,26 @@ export class MemStorage implements IStorage {
     const user = await this.getUserByEmail(email);
     if (!user) return false;
     try {
-      return await bcrypt.compare(password, user.password);
+      return bcrypt.compareSync(password, user.password);
     } catch (error) {
       return false;
     }
+  }
+
+  async deleteUser(email: string): Promise<boolean> {
+    const user = await this.getUserByEmail(email);
+    if (!user) return false;
+    this.users.delete(user.id);
+    return true;
+  }
+
+  async changePassword(email: string, newPassword: string): Promise<boolean> {
+    const user = await this.getUserByEmail(email);
+    if (!user) return false;
+    const hashedPassword = bcrypt.hashSync(newPassword, SALT_ROUNDS);
+    const updated = { ...user, password: hashedPassword };
+    this.users.set(user.id, updated);
+    return true;
   }
 
   async createOrder(insertOrder: InsertOrder): Promise<Order> {

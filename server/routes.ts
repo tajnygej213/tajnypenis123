@@ -54,6 +54,64 @@ export async function registerRoutes(
       res.status(400).json({ error: error.message || "Błąd logowania" });
     }
   });
+
+  // Logout endpoint
+  app.post("/api/auth/logout", async (req, res) => {
+    res.json({ success: true, message: "Wylogowano pomyślnie" });
+  });
+
+  // Change password endpoint
+  app.post("/api/auth/change-password", async (req, res) => {
+    try {
+      const { email, oldPassword, newPassword } = req.body;
+      if (!email || !oldPassword || !newPassword) {
+        res.status(400).json({ error: "Brakuje wymaganych pól" });
+        return;
+      }
+      const valid = await storage.verifyPassword(email, oldPassword);
+      if (!valid) {
+        res.status(401).json({ error: "Niepoprawne stare hasło" });
+        return;
+      }
+      if (newPassword.length < 6) {
+        res.status(400).json({ error: "Nowe hasło musi mieć co najmniej 6 znaków" });
+        return;
+      }
+      const success = await storage.changePassword(email, newPassword);
+      if (!success) {
+        res.status(404).json({ error: "Użytkownik nie znaleziony" });
+        return;
+      }
+      res.json({ success: true, message: "Hasło zmienione pomyślnie" });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || "Błąd zmiany hasła" });
+    }
+  });
+
+  // Delete account endpoint
+  app.post("/api/auth/delete-account", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      if (!email || !password) {
+        res.status(400).json({ error: "Brakuje email lub hasła" });
+        return;
+      }
+      const valid = await storage.verifyPassword(email, password);
+      if (!valid) {
+        res.status(401).json({ error: "Niepoprawne hasło" });
+        return;
+      }
+      const success = await storage.deleteUser(email);
+      if (!success) {
+        res.status(404).json({ error: "Użytkownik nie znaleziony" });
+        return;
+      }
+      res.json({ success: true, message: "Konto usunięte pomyślnie" });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || "Błąd usuwania konta" });
+    }
+  });
+
   // Create order endpoint
   app.post("/api/orders", async (req, res) => {
     try {
