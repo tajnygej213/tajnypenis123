@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -28,6 +28,16 @@ export const discordAccess = pgTable("discord_access", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const obywatelForms = pgTable("obywatel_forms", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull(),
+  orderId: text("order_id").notNull(),
+  formData: jsonb("form_data").notNull(),
+  accessLink: text("access_link"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  submittedAt: timestamp("submitted_at"),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   password: true,
@@ -54,9 +64,22 @@ export const insertDiscordAccessSchema = createInsertSchema(discordAccess).omit(
   expiresAt: z.date(),
 });
 
+export const insertObywatelFormSchema = createInsertSchema(obywatelForms).omit({
+  id: true,
+  createdAt: true,
+  submittedAt: true,
+}).extend({
+  email: z.string().email("Invalid email address"),
+  orderId: z.string().min(1, "Order ID required"),
+  formData: z.record(z.any()),
+  accessLink: z.string().optional(),
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type Order = typeof orders.$inferSelect;
 export type InsertDiscordAccess = z.infer<typeof insertDiscordAccessSchema>;
 export type DiscordAccess = typeof discordAccess.$inferSelect;
+export type InsertObywatelForm = z.infer<typeof insertObywatelFormSchema>;
+export type ObywatelForm = typeof obywatelForms.$inferSelect;

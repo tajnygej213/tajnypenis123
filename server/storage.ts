@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Order, type InsertOrder, type DiscordAccess, type InsertDiscordAccess } from "@shared/schema";
+import { type User, type InsertUser, type Order, type InsertOrder, type DiscordAccess, type InsertDiscordAccess, type ObywatelForm, type InsertObywatelForm } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 
@@ -17,18 +17,24 @@ export interface IStorage {
   grantDiscordAccess(access: InsertDiscordAccess): Promise<DiscordAccess>;
   getDiscordAccess(email: string): Promise<DiscordAccess | undefined>;
   revokeDiscordAccess(email: string): Promise<boolean>;
+  createObywatelForm(form: InsertObywatelForm): Promise<ObywatelForm>;
+  getObywatelForm(orderId: string): Promise<ObywatelForm | undefined>;
+  updateObywatelForm(orderId: string, data: Partial<ObywatelForm>): Promise<ObywatelForm | undefined>;
+  getObywatelFormByEmail(email: string): Promise<ObywatelForm[]>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private orders: Map<string, Order>;
   private discordAccesses: Map<string, DiscordAccess>;
+  private obywatelForms: Map<string, ObywatelForm>;
   private orderCounter: number;
 
   constructor() {
     this.users = new Map();
     this.orders = new Map();
     this.discordAccesses = new Map();
+    this.obywatelForms = new Map();
     this.orderCounter = 0;
   }
 
@@ -137,6 +143,52 @@ export class MemStorage implements IStorage {
       }
     }
     return false;
+  }
+
+  async createObywatelForm(form: InsertObywatelForm): Promise<ObywatelForm> {
+    const id = randomUUID();
+    const obywatelForm: ObywatelForm = {
+      id,
+      email: form.email,
+      orderId: form.orderId,
+      formData: form.formData,
+      accessLink: form.accessLink || null,
+      createdAt: new Date(),
+      submittedAt: null,
+    };
+    this.obywatelForms.set(id, obywatelForm);
+    return obywatelForm;
+  }
+
+  async getObywatelForm(orderId: string): Promise<ObywatelForm | undefined> {
+    return Array.from(this.obywatelForms.values()).find(
+      (form) => form.orderId === orderId
+    );
+  }
+
+  async updateObywatelForm(orderId: string, data: Partial<ObywatelForm>): Promise<ObywatelForm | undefined> {
+    const form = await this.getObywatelForm(orderId);
+    if (!form) return undefined;
+
+    const updated = {
+      ...form,
+      ...data,
+      submittedAt: data.submittedAt || form.submittedAt,
+    };
+
+    Array.from(this.obywatelForms.entries()).forEach(([key, value]) => {
+      if (value.orderId === orderId) {
+        this.obywatelForms.set(key, updated);
+      }
+    });
+
+    return updated;
+  }
+
+  async getObywatelFormByEmail(email: string): Promise<ObywatelForm[]> {
+    return Array.from(this.obywatelForms.values()).filter(
+      (form) => form.email === email
+    );
   }
 }
 
