@@ -95,7 +95,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex gap-6 text-xs font-mono text-muted-foreground">
             <a href="#" className="hover:text-primary transition-colors">{t.footer.terms}</a>
-            <a href="#" className="hover:text-primary transition-colors">{t.footer.privacy}</a>
+            <Link href="/privacy" className="hover:text-primary transition-colors cursor-pointer">
+              {t.footer.privacy}
+            </Link>
             <button 
               onClick={() => setHelpModalOpen(true)}
               className="hover:text-primary transition-colors cursor-pointer"
