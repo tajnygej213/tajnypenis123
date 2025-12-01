@@ -106,7 +106,7 @@ export const translations = {
       }
     },
     footer: {
-      copyright: "© 2024 USŁUGI MAMBA",
+      copyright: "© 2025 USŁUGI MAMBA",
       terms: "WARUNKI",
       privacy: "PRYWATNOŚĆ",
       support: "POMOC"
@@ -226,7 +226,7 @@ export const translations = {
       }
     },
     footer: {
-      copyright: "© 2024 MAMBA SERVICES",
+      copyright: "© 2025 MAMBA SERVICES",
       terms: "TERMS",
       privacy: "PRIVACY",
       support: "SUPPORT"

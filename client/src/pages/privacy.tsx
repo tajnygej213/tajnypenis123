@@ -53,7 +53,7 @@ export default function Privacy() {
         content: "Zastrzegamy sobie prawo do zmiany tej polityki prywatności. W przypadku jakichkolwiek zmian powiadomimy Cię poprzez aktualizację daty ostatniej modyfikacji na tej stronie."
       }
     ],
-    lastUpdated: "Ostatnia aktualizacja: 1 grudnia 2024"
+    lastUpdated: "Ostatnia aktualizacja: 1 grudnia 2025"
   } : {
     title: "PRIVACY POLICY",
     subtitle: "How we protect your data",
@@ -100,7 +100,7 @@ export default function Privacy() {
         content: "We reserve the right to modify this privacy policy. If we make any changes, we will notify you by updating the last modified date on this page."
       }
     ],
-    lastUpdated: "Last updated: December 1, 2024"
+    lastUpdated: "Last updated: December 1, 2025"
   };
 
   return (
