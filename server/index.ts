@@ -3,9 +3,26 @@ import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 import { startDiscordBot } from "./discord-bot";
+import { storage } from "./storage";
+import { ALL_ACCESS_CODES } from "./access-codes";
 
 const app = express();
 const httpServer = createServer(app);
+
+// Initialize access codes on startup
+async function initializeAccessCodes() {
+  for (const code of ALL_ACCESS_CODES) {
+    try {
+      await storage.createAccessCode({
+        code,
+        productType: "obywatel",
+      });
+    } catch (error) {
+      // Code might already exist
+    }
+  }
+  console.log(`[init] Loaded ${ALL_ACCESS_CODES.length} access codes`);
+}
 
 declare module "http" {
   interface IncomingMessage {
@@ -61,6 +78,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  await initializeAccessCodes();
   await registerRoutes(httpServer, app);
 
   // Start Discord bot if configured

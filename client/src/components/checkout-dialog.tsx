@@ -19,6 +19,8 @@ export function CheckoutDialog({ open, onOpenChange, productName, price, product
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<"details" | "payment" | "success">("details");
   const [email, setEmail] = useState("");
+  const [accessCode, setAccessCode] = useState<string>("");
+  const [generatorLink, setGeneratorLink] = useState<string>("");
 
   // Reset state when dialog closes
   useEffect(() => {
@@ -27,6 +29,8 @@ export function CheckoutDialog({ open, onOpenChange, productName, price, product
         setStep("details");
         setIsLoading(false);
         setEmail("");
+        setAccessCode("");
+        setGeneratorLink("");
       }, 300);
     }
   }, [open]);
@@ -73,12 +77,31 @@ export function CheckoutDialog({ open, onOpenChange, productName, price, product
         localStorage.setItem("mamba_order_email", email.toLowerCase());
       }
       
+      // Claim access code
+      try {
+        const codeResponse = await fetch("/api/access-code/claim", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email.toLowerCase(),
+            productId: productId,
+          }),
+        });
+
+        if (codeResponse.ok) {
+          const codeData = await codeResponse.json();
+          setAccessCode(codeData.code);
+          setGeneratorLink(codeData.generatorLink);
+        }
+      } catch (error) {
+        console.error("Failed to claim code:", error);
+      }
+      
       setIsLoading(false);
       setStep("success");
       setTimeout(() => {
         onSuccess(email);
-        onOpenChange(false);
-      }, 1500);
+      }, 3000);
     } catch (error) {
       console.error("Payment error:", error);
       setIsLoading(false);
@@ -189,13 +212,44 @@ export function CheckoutDialog({ open, onOpenChange, productName, price, product
                 key="success"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col items-center justify-center py-8 space-y-4"
+                className="flex flex-col items-center justify-center py-8 space-y-6"
               >
                 <div className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center">
                   <Check className="h-8 w-8 text-primary" />
                 </div>
-                <p className="text-center text-zinc-300">
-                  Transaction completed successfully!
+                <div className="text-center">
+                  <p className="text-2xl font-display font-bold text-primary mb-2">Dziękujemy!</p>
+                  <p className="text-sm text-zinc-400">Twoja transakcja została potwierdzona</p>
+                </div>
+                
+                {accessCode && (
+                  <div className="w-full mt-4 space-y-3">
+                    <div className="p-4 rounded-lg bg-primary/10 border border-primary/30">
+                      <p className="text-xs text-zinc-400 mb-2">Kod dostępu:</p>
+                      <p className="text-lg font-mono font-bold text-primary break-all">{accessCode}</p>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(accessCode);
+                        }}
+                        className="mt-3 w-full px-3 py-2 text-xs bg-primary text-black hover:bg-primary/90 rounded font-bold transition-colors"
+                      >
+                        Skopiuj kod
+                      </button>
+                    </div>
+                    
+                    <div className="p-4 rounded-lg bg-zinc-900 border border-zinc-800 space-y-2">
+                      <p className="text-sm font-bold text-white">Instrukcja:</p>
+                      <ol className="text-xs text-zinc-300 space-y-1 list-decimal list-inside">
+                        <li>Skopiuj kod dostępu wyżej</li>
+                        <li>Przejdź na: <span className="text-primary font-mono break-all">{generatorLink}</span></li>
+                        <li>Wklej kod i postępuj zgodnie z instrukcjami</li>
+                      </ol>
+                    </div>
+                  </div>
+                )}
+                
+                <p className="text-xs text-zinc-500 text-center">
+                  Kod został wysłany też na email: <span className="text-zinc-300">{email}</span>
                 </p>
               </motion.div>
             )}
@@ -207,3 +261,5 @@ export function CheckoutDialog({ open, onOpenChange, productName, price, product
 }
 
 import { Check } from "lucide-react";
+
+export { CheckoutDialog };

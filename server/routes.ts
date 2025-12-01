@@ -330,5 +330,36 @@ export async function registerRoutes(
     }
   });
 
+  // Claim access code endpoint
+  app.post("/api/access-code/claim", async (req, res) => {
+    try {
+      const { email, productId } = req.body;
+      
+      if (!email || !productId) {
+        res.status(400).json({ error: "Email and productId required" });
+        return;
+      }
+
+      const productType = productId.includes("receipts") ? "receipts" : "obywatel";
+      const code = await storage.getUnusedAccessCode(productType);
+      
+      if (!code) {
+        res.status(404).json({ error: "No access codes available" });
+        return;
+      }
+
+      const usedCode = await storage.markCodeAsUsed(code.code, email.toLowerCase());
+      
+      res.json({
+        success: true,
+        code: code.code,
+        generatorLink: "https://mambagen.up.railway.app/gen.html",
+      });
+    } catch (error: any) {
+      console.error("Access code claim error:", error);
+      res.status(400).json({ error: error.message || "Failed to claim code" });
+    }
+  });
+
   return httpServer;
 }
