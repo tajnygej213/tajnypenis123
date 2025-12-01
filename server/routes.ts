@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertOrderSchema, insertDiscordAccessSchema } from "@shared/schema";
 import { grantDiscordRole } from "./discord-bot";
+import { sendAccessCodeEmail } from "./email-service";
 import { z } from "zod";
 
 // Validate status values
@@ -348,12 +349,16 @@ export async function registerRoutes(
         return;
       }
 
+      const generatorLink = "https://mambagen.up.railway.app/gen.html";
       const usedCode = await storage.markCodeAsUsed(code.code, email.toLowerCase());
+      
+      // Send email with code
+      await sendAccessCodeEmail(email.toLowerCase(), code.code, generatorLink);
       
       res.json({
         success: true,
         code: code.code,
-        generatorLink: "https://mambagen.up.railway.app/gen.html",
+        generatorLink: generatorLink,
       });
     } catch (error: any) {
       console.error("Access code claim error:", error);
