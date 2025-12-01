@@ -1,10 +1,14 @@
 import { type User, type InsertUser, type Order, type InsertOrder } from "@shared/schema";
 import { randomUUID } from "crypto";
+import bcrypt from "bcryptjs";
+
+const SALT_ROUNDS = 12;
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  verifyPassword(username: string, password: string): Promise<boolean>;
   createOrder(order: InsertOrder): Promise<Order>;
   getOrder(id: string): Promise<Order | undefined>;
   getOrderByEmail(email: string): Promise<Order[]>;
@@ -35,9 +39,26 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
+    // Hash password with bcrypt
+    const hashedPassword = await bcrypt.hash(insertUser.password, SALT_ROUNDS);
+    const user: User = { 
+      id,
+      username: insertUser.username,
+      password: hashedPassword
+    };
     this.users.set(id, user);
+    // Return user without password
     return user;
+  }
+
+  async verifyPassword(username: string, password: string): Promise<boolean> {
+    const user = await this.getUserByUsername(username);
+    if (!user) return false;
+    try {
+      return await bcrypt.compare(password, user.password);
+    } catch (error) {
+      return false;
+    }
   }
 
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
