@@ -5,6 +5,13 @@ let connectionSettings: any;
 let cachedClient: Client | null = null;
 
 async function getAccessToken() {
+  // First try env var (for Railway/production)
+  const envToken = process.env.DISCORD_TOKEN;
+  if (envToken) {
+    return envToken;
+  }
+
+  // Fallback: try Replit Connectors (for Replit development)
   if (
     connectionSettings &&
     connectionSettings.settings.expires_at &&
@@ -21,7 +28,7 @@ async function getAccessToken() {
       : null;
 
   if (!xReplitToken) {
-    console.error("X_REPLIT_TOKEN not found");
+    console.warn("[Discord] DISCORD_TOKEN env var or Replit connection not found - bot will be disabled");
     return null;
   }
 
@@ -45,7 +52,7 @@ async function getAccessToken() {
       connectionSettings?.settings?.oauth?.credentials?.access_token;
 
     if (!connectionSettings || !accessToken) {
-      console.error("Discord not properly configured");
+      console.warn("[Discord] not properly configured via Replit connector");
       return null;
     }
     return accessToken;
