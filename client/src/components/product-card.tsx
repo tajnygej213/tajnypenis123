@@ -7,7 +7,8 @@ interface ProductCardProps {
   title: string;
   price: string;
   description: string;
-  image: string;
+  image?: string;
+  video?: string;
   features: string[];
   accentColor?: "primary" | "secondary";
   onBuy: () => void;
@@ -17,7 +18,8 @@ export function ProductCard({
   title, 
   price, 
   description, 
-  image, 
+  image,
+  video,
   features, 
   accentColor = "primary",
   onBuy 
@@ -35,14 +37,24 @@ export function ProductCard({
       className="h-full"
     >
       <Card className={`h-full flex flex-col overflow-hidden bg-card/40 backdrop-blur-md border ${borderClass} transition-colors group`}>
-        {/* Image Area */}
+        {/* Image/Video Area */}
         <div className="h-48 overflow-hidden relative">
           <div className={`absolute inset-0 bg-gradient-to-t from-background to-transparent z-10`} />
-          <img 
-            src={image} 
-            alt={title} 
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-80 group-hover:opacity-100" 
-          />
+          {video ? (
+            <video 
+              src={video} 
+              autoPlay 
+              muted 
+              loop 
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-80 group-hover:opacity-100" 
+            />
+          ) : (
+            <img 
+              src={image} 
+              alt={title} 
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-80 group-hover:opacity-100" 
+            />
+          )}
           <div className="absolute top-4 right-4 z-20 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
             <span className={`font-mono font-bold ${colorClass}`}>{price}</span>
           </div>

@@ -8,6 +8,7 @@ import mambaLogo from "@assets/generated_images/futuristic_glowing_green_mamba_s
 import obywatelBg from "@assets/generated_images/cyberpunk_digital_id_card_abstract_background.png";
 import receiptsBg from "@assets/generated_images/cyberpunk_digital_receipt_abstract_background.png";
 import heroBg from "@assets/generated_images/dark_cyberpunk_digital_grid_hero_background.png";
+import obywatelVideo from "@assets/copy_E3111A92-34FD-401C-9AE1-8359E1F1F619_1764588726011.mov";
 
 export default function Home() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -79,7 +80,7 @@ export default function Home() {
               title="MambaObywatel"
               price="20 zł"
               description="App version for citizen identity management. Generate valid data formats instantly."
-              image={obywatelBg}
+              video={obywatelVideo}
               features={[
                 "Instant Data Generation",
                 "Automated Form Filling",
@@ -94,7 +95,7 @@ export default function Home() {
               title="MambaObywatel"
               price="200 zł"
               description="Full generator suite with advanced features. Complete automation toolkit."
-              image={obywatelBg}
+              video={obywatelVideo}
               features={[
                 "Full Generator Access",
                 "Advanced Customization",
