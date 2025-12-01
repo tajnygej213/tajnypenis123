@@ -2,27 +2,32 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { accessCodes } from "@shared/schema";
 import { ALL_ACCESS_CODES } from "./access-codes";
+import { sql } from "drizzle-orm";
 
 export async function initializeDatabase() {
   if (!process.env.DATABASE_URL) {
-    console.log("⚠️ DATABASE_URL not set - skipping database initialization");
-    return;
+    console.log("⚠️  DATABASE_URL not set");
+    return null;
   }
 
   try {
     console.log("🔧 Initializing database...");
     
-    const sql = postgres(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const sqlConnection = postgres(process.env.DATABASE_URL);
+    const db = drizzle(sqlConnection);
 
-    // Create tables (idempotent - won't fail if they exist)
-    await sql`
+    // Create tables - EACH STATEMENT SEPARATELY
+    console.log("📝 Creating database tables...");
+    
+    await sqlConnection`
       CREATE TABLE IF NOT EXISTS users (
         id varchar PRIMARY KEY,
         email text NOT NULL UNIQUE,
         password text NOT NULL
       );
-      
+    `;
+    
+    await sqlConnection`
       CREATE TABLE IF NOT EXISTS orders (
         id varchar PRIMARY KEY,
         email text NOT NULL,
@@ -33,7 +38,9 @@ export async function initializeDatabase() {
         status text NOT NULL DEFAULT 'pending',
         created_at timestamp NOT NULL DEFAULT NOW()
       );
-      
+    `;
+    
+    await sqlConnection`
       CREATE TABLE IF NOT EXISTS discord_access (
         id varchar PRIMARY KEY,
         email text NOT NULL,
@@ -41,7 +48,9 @@ export async function initializeDatabase() {
         expires_at timestamp NOT NULL,
         created_at timestamp NOT NULL DEFAULT NOW()
       );
-      
+    `;
+    
+    await sqlConnection`
       CREATE TABLE IF NOT EXISTS obywatel_forms (
         id varchar PRIMARY KEY,
         email text NOT NULL,
@@ -51,7 +60,9 @@ export async function initializeDatabase() {
         created_at timestamp NOT NULL DEFAULT NOW(),
         submitted_at timestamp
       );
-      
+    `;
+    
+    await sqlConnection`
       CREATE TABLE IF NOT EXISTS access_codes (
         id varchar PRIMARY KEY,
         code text NOT NULL UNIQUE,
@@ -64,38 +75,40 @@ export async function initializeDatabase() {
       );
     `;
 
-    console.log("✅ Database tables created/verified");
+    console.log("✅ Database tables created");
 
     // Check if codes already exist
-    const existingCodes = await sql`SELECT COUNT(*) as count FROM access_codes`;
-    const codeCount = existingCodes[0]?.count || 0;
+    const existingCodes = await sqlConnection`SELECT COUNT(*) as count FROM access_codes`;
+    const codeCount = parseInt(existingCodes[0]?.count as string || "0", 10);
 
     if (codeCount === 0) {
       console.log(`🌱 Seeding ${ALL_ACCESS_CODES.length} access codes...`);
       
-      // Batch insert codes
       for (let i = 0; i < ALL_ACCESS_CODES.length; i += 50) {
         const batch = ALL_ACCESS_CODES.slice(i, i + 50);
         
-        await db.insert(accessCodes).values(
-          batch.map((code: string, idx: number) => ({
-            code,
-            productType: i + idx < 200 ? "obywatel" : "receipts",
-            isUsed: "false",
-          }))
-        ).onConflictDoNothing();
-        
-        console.log(`✅ Seeded ${Math.min(i + 50, ALL_ACCESS_CODES.length)}/${ALL_ACCESS_CODES.length}`);
+        try {
+          await db.insert(accessCodes).values(
+            batch.map((code: string, idx: number) => ({
+              code,
+              productType: i + idx < 200 ? "obywatel" : "receipts",
+              isUsed: "false",
+            }))
+          ).onConflictDoNothing();
+          
+          console.log(`✅ ${Math.min(i + 50, ALL_ACCESS_CODES.length)}/${ALL_ACCESS_CODES.length}`);
+        } catch (err) {
+          console.error(`Batch ${i}:`, err);
+        }
       }
       
-      console.log("✨ Database seeding complete!");
+      console.log("✨ Seeding complete!");
     } else {
-      console.log(`✅ Database already has ${codeCount} access codes`);
+      console.log(`✅ Already have ${codeCount} codes`);
     }
 
-    await sql.end();
+    await sqlConnection.end();
   } catch (error) {
-    console.error("❌ Database initialization failed:", error);
-    // Don't exit - let the app try to start anyway
+    console.error("❌ Init failed:", error);
   }
 }
