@@ -34,7 +34,8 @@ export default function Home() {
       features: t.products.obywatelApp.features,
       accentColor: "primary" as const,
       name: "MambaObywatel (App)",
-      discordLink: "https://discord.gg/Ka5TQuWN6s"
+      discordLink: "https://discord.gg/Ka5TQuWN6s",
+      stripeLink: "https://buy.stripe.com/9B600k7NwbhLdTXdJugEg02"
     },
     {
       id: "obywatel-pro" as ProductId,
@@ -55,7 +56,8 @@ export default function Home() {
       features: t.products.receiptsMonth.features,
       accentColor: "secondary" as const,
       name: "MambaReceipts (Monthly)",
-      discordLink: "https://discord.gg/HxGrw2Rf99"
+      discordLink: "https://discord.gg/HxGrw2Rf99",
+      stripeLink: "https://buy.stripe.com/9B600k7NwbhLdTXdJugEg02"
     },
     {
       id: "receipts-year" as ProductId,
@@ -198,6 +200,7 @@ export default function Home() {
                   features={selectedProductData.features}
                   accentColor={selectedProductData.accentColor}
                   discordLink={selectedProductData.discordLink}
+                  stripeLink={selectedProductData.stripeLink}
                   onBuy={() => handleBuy({
                     name: selectedProductData.name,
                     price: selectedProductData.price,

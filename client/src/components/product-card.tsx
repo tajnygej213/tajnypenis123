@@ -13,6 +13,7 @@ interface ProductCardProps {
   accentColor?: "primary" | "secondary";
   onBuy: () => void;
   discordLink?: string;
+  stripeLink?: string;
 }
 
 export function ProductCard({ 
@@ -24,8 +25,16 @@ export function ProductCard({
   features, 
   accentColor = "primary",
   onBuy,
-  discordLink
+  discordLink,
+  stripeLink
 }: ProductCardProps) {
+  const handlePurchaseClick = () => {
+    if (stripeLink) {
+      window.open(stripeLink, '_blank');
+    } else {
+      onBuy();
+    }
+  };
   const colorClass = accentColor === "primary" ? "text-primary" : "text-secondary";
   const borderClass = accentColor === "primary" ? "border-primary/20 group-hover:border-primary/50" : "border-secondary/20 group-hover:border-secondary/50";
   const buttonClass = accentColor === "primary" 
@@ -116,9 +125,9 @@ export function ProductCard({
         <CardFooter>
           <Button 
             className={`w-full font-mono font-bold tracking-wider uppercase ${buttonClass}`}
-            onClick={onBuy}
+            onClick={handlePurchaseClick}
           >
-            Purchase Access <ArrowRight className="ml-2 h-4 w-4" />
+            {stripeLink ? "Buy Now" : "Purchase Access"} <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </CardFooter>
       </Card>
