@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { DiscordModal } from "@/components/discord-modal";
 import { useLanguage } from "@/hooks/use-language";
 import { translations } from "@/lib/translations";
 import logo from "@assets/generated_images/futuristic_glowing_green_mamba_snake_logo.png";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [discordModalOpen, setDiscordModalOpen] = useState(false);
   const { language } = useLanguage();
   const t = translations[language];
 
@@ -21,9 +23,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <Link href="/dashboard" className="text-foreground/80 hover:text-primary transition-colors font-display tracking-wider cursor-pointer">
         {t.nav.dashboard}
       </Link>
-      <a href="https://discord.gg/mamba" target="_blank" className="text-foreground/80 hover:text-secondary transition-colors font-display tracking-wider cursor-pointer">
+      <button 
+        onClick={() => setDiscordModalOpen(true)}
+        className="text-foreground/80 hover:text-secondary transition-colors font-display tracking-wider cursor-pointer"
+      >
         {t.nav.discord}
-      </a>
+      </button>
     </>
   );
 
@@ -93,6 +98,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </footer>
+
+      <DiscordModal open={discordModalOpen} onOpenChange={setDiscordModalOpen} />
     </div>
   );
 }
