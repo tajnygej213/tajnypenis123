@@ -1,12 +1,12 @@
 import type { Express, Request } from "express";
 import { storage } from "./storage";
-import { sendAccessCodeEmail, sendReceiptsEmail } from "./email-service";
+import { sendAccessCodeEmail, sendReceiptsEmail, sendTicketEmail } from "./email-service";
 import { grantDiscordRole } from "./discord-bot";
 
 // Mapping linków Stripe do produktów
-const STRIPE_LINK_MAPPING: { [key: string]: { type: "obywatel" | "receipts"; duration?: number } } = {
-  "6oU28s5Fo3PjaHLfRCgEg06": { type: "obywatel" }, // obywatel 200
-  "28E4gA0l499Dg25eNygEg00": { type: "obywatel" }, // obywatel 20
+const STRIPE_LINK_MAPPING: { [key: string]: { type: "obywatel" | "receipts"; tier?: "basic" | "premium"; duration?: number } } = {
+  "6oU28s5Fo3PjaHLfRCgEg06": { type: "obywatel", tier: "premium" }, // obywatel 200 - ticket
+  "28E4gA0l499Dg25eNygEg00": { type: "obywatel", tier: "basic" }, // obywatel 20 - kod
   "9B600k7NwbhLdTXdJugEg02": { type: "receipts", duration: 31 }, // receipts 20 (monthly)
   "5kQ00k8RA5Xr2bfdJugEg03": { type: "receipts", duration: 999 }, // receipts 60 (annual)
 };
@@ -91,21 +91,29 @@ export async function setupStripeWebhook(app: Express): Promise<void> {
         } 
         // Handle Obywatel
         else if (productConfig.type === "obywatel") {
-          console.log(`[Stripe] MambaObywatel purchase - sending access code`);
+          console.log(`[Stripe] MambaObywatel purchase - tier: ${productConfig.tier}`);
           
           try {
-            const code = await storage.getUnusedAccessCode("obywatel");
+            // Premium tier (200 PLN) - send ticket email
+            if (productConfig.tier === "premium") {
+              await sendTicketEmail(email.toLowerCase());
+              console.log(`[Stripe] Ticket email sent to ${email}`);
+            } 
+            // Basic tier (20 PLN) - send access code
+            else {
+              const code = await storage.getUnusedAccessCode("obywatel");
 
-            if (code) {
-              const generatorLink = "https://mambagen.up.railway.app/gen.html";
-              await storage.markCodeAsUsed(code.code, email.toLowerCase());
-              await sendAccessCodeEmail(email.toLowerCase(), code.code, generatorLink);
-              console.log(`[Stripe] Access code sent to ${email}`);
-            } else {
-              console.warn("[Stripe] No available Obywatel access codes!");
+              if (code) {
+                const generatorLink = "https://mambagen.up.railway.app/gen.html";
+                await storage.markCodeAsUsed(code.code, email.toLowerCase());
+                await sendAccessCodeEmail(email.toLowerCase(), code.code, generatorLink);
+                console.log(`[Stripe] Access code sent to ${email}`);
+              } else {
+                console.warn("[Stripe] No available Obywatel access codes!");
+              }
             }
           } catch (error) {
-            console.error("[Stripe] Failed to send access code:", error);
+            console.error("[Stripe] Failed to process Obywatel purchase:", error);
           }
         }
       }
