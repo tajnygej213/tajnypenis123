@@ -5,23 +5,15 @@ import { createServer } from "http";
 import { startDiscordBot } from "./discord-bot";
 import { storage } from "./storage";
 import { ALL_ACCESS_CODES } from "./access-codes";
+import { initializeDatabase } from "./init-db";
 
 const app = express();
 const httpServer = createServer(app);
 
-// Initialize access codes on startup
+// Note: Access codes are now seeded in init-db.ts
+// This function is kept for backward compatibility but codes are pre-loaded from database
 async function initializeAccessCodes() {
-  for (const code of ALL_ACCESS_CODES) {
-    try {
-      await storage.createAccessCode({
-        code,
-        productType: "obywatel",
-      });
-    } catch (error) {
-      // Code might already exist
-    }
-  }
-  console.log(`[init] Loaded ${ALL_ACCESS_CODES.length} access codes`);
+  console.log(`[init] Access codes pre-loaded from database`);
 }
 
 declare module "http" {
@@ -78,6 +70,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize database (creates tables and seeds codes if needed)
+  await initializeDatabase();
+  
   await initializeAccessCodes();
   await registerRoutes(httpServer, app);
 
