@@ -5,14 +5,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/use-language";
 import { translations } from "@/lib/translations";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { LogOut, Settings, Trash2 } from "lucide-react";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { LogOut, Settings, Trash2, ChevronDown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +29,7 @@ export function AccountMenu() {
   
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -41,6 +39,7 @@ export function AccountMenu() {
   const handleLogout = () => {
     localStorage.removeItem("mamba_user_email");
     localStorage.removeItem("mamba_user_id");
+    setPopoverOpen(false);
     setLocation("/");
   };
 
@@ -128,43 +127,52 @@ export function AccountMenu() {
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+      <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+        <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className="border-primary/50 text-primary hover:bg-primary hover:text-black font-mono text-xs uppercase tracking-widest cursor-pointer"
+            className="border-primary/50 text-primary hover:bg-primary hover:text-black font-mono text-xs uppercase tracking-widest cursor-pointer flex items-center gap-2"
           >
             {t.nav.account}
+            <ChevronDown className="h-3 w-3" />
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="bg-zinc-950 border-zinc-800 w-56">
-          <DropdownMenuLabel className="text-primary">
-            {t.nav.loggedInAs}
-            <br />
-            <span className="text-xs text-foreground/70">{email}</span>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator className="bg-zinc-800" />
-          <DropdownMenuItem
-            onClick={() => setChangePasswordOpen(true)}
-            className="cursor-pointer hover:bg-zinc-900"
-          >
-            <Settings className="mr-2 h-4 w-4" />
-            {t.nav.changePassword}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => setDeleteAccountOpen(true)}
-            className="cursor-pointer hover:bg-red-900/20 text-red-400"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            {t.nav.deleteAccount}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator className="bg-zinc-800" />
-          <DropdownMenuItem onClick={handleLogout} className="cursor-pointer hover:bg-zinc-900">
-            <LogOut className="mr-2 h-4 w-4" />
-            {t.nav.logout}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </PopoverTrigger>
+        <PopoverContent className="bg-zinc-950 border-zinc-800 w-56 p-0">
+          <div className="p-4 border-b border-zinc-800">
+            <p className="text-xs text-primary font-semibold">{t.nav.loggedInAs}</p>
+            <p className="text-xs text-foreground/70 truncate">{email}</p>
+          </div>
+          <div className="p-2 space-y-1">
+            <button
+              onClick={() => {
+                setPopoverOpen(false);
+                setChangePasswordOpen(true);
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-zinc-900 transition-colors text-foreground cursor-pointer"
+            >
+              <Settings className="h-4 w-4" />
+              {t.nav.changePassword}
+            </button>
+            <button
+              onClick={() => {
+                setPopoverOpen(false);
+                setDeleteAccountOpen(true);
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-red-900/20 transition-colors text-red-400 cursor-pointer"
+            >
+              <Trash2 className="h-4 w-4" />
+              {t.nav.deleteAccount}
+            </button>
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-zinc-900 transition-colors text-foreground cursor-pointer border-t border-zinc-800 mt-2 pt-3"
+            >
+              <LogOut className="h-4 w-4" />
+              {t.nav.logout}
+            </button>
+          </div>
+        </PopoverContent>
+      </Popover>
 
       {/* Change Password Dialog */}
       <Dialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen}>
