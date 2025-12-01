@@ -11,12 +11,14 @@ interface CheckoutDialogProps {
   onOpenChange: (open: boolean) => void;
   productName: string;
   price: string;
-  onSuccess: () => void;
+  productId: string;
+  onSuccess: (email: string) => void;
 }
 
-export function CheckoutDialog({ open, onOpenChange, productName, price, onSuccess }: CheckoutDialogProps) {
+export function CheckoutDialog({ open, onOpenChange, productName, price, productId, onSuccess }: CheckoutDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<"details" | "payment" | "success">("details");
+  const [email, setEmail] = useState("");
 
   // Reset state when dialog closes
   useEffect(() => {
@@ -24,23 +26,48 @@ export function CheckoutDialog({ open, onOpenChange, productName, price, onSucce
       setTimeout(() => {
         setStep("details");
         setIsLoading(false);
+        setEmail("");
       }, 300);
     }
   }, [open]);
 
-  const handlePayment = (e: React.FormEvent) => {
+  const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email) return;
+    
     setIsLoading(true);
     
-    // Simulate Stripe processing
-    setTimeout(() => {
+    try {
+      // Create order in database
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          productId,
+          productName,
+          price,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to create order");
+
+      const order = await response.json();
+
+      // Store order ID and email in localStorage for later verification
+      localStorage.setItem("mamba_order_id", order.id);
+      localStorage.setItem("mamba_order_email", email);
+      
       setIsLoading(false);
       setStep("success");
       setTimeout(() => {
-        onSuccess();
+        onSuccess(email);
         onOpenChange(false);
       }, 1500);
-    }, 2000);
+    } catch (error) {
+      console.error("Payment error:", error);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -69,14 +96,21 @@ export function CheckoutDialog({ open, onOpenChange, productName, price, onSucce
               >
                 <div className="space-y-2">
                   <Label>Email Address</Label>
-                  <Input placeholder="you@example.com" className="bg-zinc-900 border-zinc-800 focus:border-primary/50" />
+                  <Input 
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com" 
+                    className="bg-zinc-900 border-zinc-800 focus:border-primary/50" 
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Discord Username (Optional)</Label>
                   <Input placeholder="username#0000" className="bg-zinc-900 border-zinc-800 focus:border-primary/50" />
                 </div>
                 <div className="pt-4 flex justify-end">
-                  <Button onClick={() => setStep("payment")} className="w-full bg-primary text-black hover:bg-primary/90 font-bold">
+                  <Button onClick={() => setStep("payment")} disabled={!email} className="w-full bg-primary text-black hover:bg-primary/90 font-bold disabled:opacity-50">
                     Continue to Payment
                   </Button>
                 </div>

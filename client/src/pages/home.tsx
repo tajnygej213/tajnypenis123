@@ -77,8 +77,19 @@ export default function Home() {
     setCheckoutOpen(true);
   };
 
-  const handleSuccess = () => {
+  const handleSuccess = (email: string) => {
     if (selectedProduct) {
+      // Mark order as paid in the database
+      const orderId = localStorage.getItem("mamba_order_id");
+      if (orderId) {
+        fetch(`/api/orders/${orderId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "paid" }),
+        }).catch(console.error);
+      }
+
+      // Store locally too for quick access
       const purchases = JSON.parse(localStorage.getItem("mamba_purchases") || "[]");
       if (!purchases.includes(selectedProduct.id)) {
         purchases.push(selectedProduct.id);
@@ -218,6 +229,7 @@ export default function Home() {
         onOpenChange={setCheckoutOpen}
         productName={selectedProduct?.name || ""}
         price={selectedProduct?.price || ""}
+        productId={selectedProduct?.id || ""}
         onSuccess={handleSuccess}
       />
     </Layout>

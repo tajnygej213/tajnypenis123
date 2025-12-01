@@ -19,8 +19,32 @@ export default function Dashboard() {
   const t = translations[language];
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("mamba_purchases") || "[]");
-    setPurchases(stored);
+    // First try to load from API
+    const email = localStorage.getItem("mamba_order_email");
+    if (email) {
+      fetch(`/api/orders/${email}/paid`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.orders && data.orders.length > 0) {
+            const productIds = data.orders.map((order: any) => order.productId);
+            setPurchases(productIds);
+            localStorage.setItem("mamba_purchases", JSON.stringify(productIds));
+          } else {
+            // Fallback to localStorage if API has no data
+            const stored = JSON.parse(localStorage.getItem("mamba_purchases") || "[]");
+            setPurchases(stored);
+          }
+        })
+        .catch(() => {
+          // Fallback to localStorage on error
+          const stored = JSON.parse(localStorage.getItem("mamba_purchases") || "[]");
+          setPurchases(stored);
+        });
+    } else {
+      // No email, use localStorage only
+      const stored = JSON.parse(localStorage.getItem("mamba_purchases") || "[]");
+      setPurchases(stored);
+    }
   }, []);
 
   if (purchases.length === 0) {
