@@ -4,7 +4,31 @@ export const translations = {
       home: "STRONA GŁÓWNA",
       dashboard: "PANEL",
       discord: "DISCORD",
-      login: "LOGOWANIE"
+      login: "LOGOWANIE",
+      logout: "WYLOGUJ",
+      account: "KONTO",
+      changePassword: "Zmień hasło",
+      deleteAccount: "Usuń konto",
+      loggedInAs: "Zalogowany jako"
+    },
+    account: {
+      title: "USTAWIENIA KONTA",
+      changePassword: {
+        title: "Zmień hasło",
+        oldPassword: "Stare hasło",
+        newPassword: "Nowe hasło",
+        confirmPassword: "Potwierdź nowe hasło",
+        submit: "Zmień hasło",
+        success: "Hasło zmienione pomyślnie!"
+      },
+      deleteAccount: {
+        title: "Usuń konto",
+        warning: "Ta akcja jest nieodwracalna. Usuniesz całe swoje konto.",
+        password: "Wpisz hasło, aby potwierdzić",
+        submit: "Usuń konto",
+        confirm: "Czy na pewno? Ta akcja jest nieodwracalna!",
+        success: "Konto usunięte pomyślnie"
+      }
     },
     hero: {
       title: "MAMBA",
@@ -124,7 +148,31 @@ export const translations = {
       home: "HOME",
       dashboard: "DASHBOARD",
       discord: "DISCORD",
-      login: "LOGIN"
+      login: "LOGIN",
+      logout: "LOGOUT",
+      account: "ACCOUNT",
+      changePassword: "Change Password",
+      deleteAccount: "Delete Account",
+      loggedInAs: "Logged in as"
+    },
+    account: {
+      title: "ACCOUNT SETTINGS",
+      changePassword: {
+        title: "Change Password",
+        oldPassword: "Old Password",
+        newPassword: "New Password",
+        confirmPassword: "Confirm New Password",
+        submit: "Change Password",
+        success: "Password changed successfully!"
+      },
+      deleteAccount: {
+        title: "Delete Account",
+        warning: "This action is irreversible. You will delete your entire account.",
+        password: "Enter password to confirm",
+        submit: "Delete Account",
+        confirm: "Are you sure? This action is irreversible!",
+        success: "Account deleted successfully"
+      }
     },
     hero: {
       title: "AUTOMATE YOUR",

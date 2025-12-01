@@ -1,11 +1,12 @@
 import { Link } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { DiscordModal } from "@/components/discord-modal";
 import { HelpModal } from "@/components/help-modal";
+import { AccountMenu } from "@/components/account-menu";
 import { useLanguage } from "@/hooks/use-language";
 import { translations } from "@/lib/translations";
 import logo from "@assets/generated_images/futuristic_glowing_green_mamba_snake_logo.png";
@@ -14,8 +15,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [discordModalOpen, setDiscordModalOpen] = useState(false);
   const [helpModalOpen, setHelpModalOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { language } = useLanguage();
   const t = translations[language];
+
+  useEffect(() => {
+    const email = localStorage.getItem("mamba_user_email");
+    setIsLoggedIn(!!email);
+  }, []);
 
   const NavContent = () => (
     <>
@@ -54,14 +61,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <nav className="hidden md:flex items-center gap-8">
             <NavContent />
             <LanguageSwitcher />
-            <Link href="/auth">
-              <Button 
-                variant="outline" 
-                className="border-primary/50 text-primary hover:bg-primary hover:text-black font-mono text-xs uppercase tracking-widest cursor-pointer"
-              >
-                {t.nav.login}
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+              <AccountMenu />
+            ) : (
+              <Link href="/auth">
+                <Button 
+                  variant="outline" 
+                  className="border-primary/50 text-primary hover:bg-primary hover:text-black font-mono text-xs uppercase tracking-widest cursor-pointer"
+                >
+                  {t.nav.login}
+                </Button>
+              </Link>
+            )}
           </nav>
 
           {/* Mobile Nav */}
@@ -76,11 +87,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <SheetContent side="right" className="bg-card/95 backdrop-blur-xl border-l border-white/10">
                 <div className="flex flex-col gap-6 mt-10">
                   <NavContent />
-                  <Link href="/auth" onClick={() => setIsOpen(false)}>
-                    <Button className="w-full bg-primary text-black hover:bg-primary/90 font-mono text-xs uppercase tracking-widest">
-                      {t.nav.login}
-                    </Button>
-                  </Link>
+                  {!isLoggedIn && (
+                    <Link href="/auth" onClick={() => setIsOpen(false)}>
+                      <Button className="w-full bg-primary text-black hover:bg-primary/90 font-mono text-xs uppercase tracking-widest">
+                        {t.nav.login}
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>
