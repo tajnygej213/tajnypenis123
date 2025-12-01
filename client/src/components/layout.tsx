@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { DiscordModal } from "@/components/discord-modal";
+import { HelpModal } from "@/components/help-modal";
 import { useLanguage } from "@/hooks/use-language";
 import { translations } from "@/lib/translations";
 import logo from "@assets/generated_images/futuristic_glowing_green_mamba_snake_logo.png";
@@ -12,6 +13,7 @@ import logo from "@assets/generated_images/futuristic_glowing_green_mamba_snake_
 export function Layout({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [discordModalOpen, setDiscordModalOpen] = useState(false);
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
   const { language } = useLanguage();
   const t = translations[language];
 
@@ -94,12 +96,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex gap-6 text-xs font-mono text-muted-foreground">
             <a href="#" className="hover:text-primary transition-colors">{t.footer.terms}</a>
             <a href="#" className="hover:text-primary transition-colors">{t.footer.privacy}</a>
-            <a href="#" className="hover:text-primary transition-colors">{t.footer.support}</a>
+            <button 
+              onClick={() => setHelpModalOpen(true)}
+              className="hover:text-primary transition-colors cursor-pointer"
+            >
+              {t.footer.support}
+            </button>
           </div>
         </div>
       </footer>
 
       <DiscordModal open={discordModalOpen} onOpenChange={setDiscordModalOpen} />
+      <HelpModal open={helpModalOpen} onOpenChange={setHelpModalOpen} />
     </div>
   );
 }

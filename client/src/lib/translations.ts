@@ -110,6 +110,13 @@ export const translations = {
       terms: "WARUNKI",
       privacy: "PRYWATNOŚĆ",
       support: "POMOC"
+    },
+    help: {
+      title: "Potrzebujesz pomocy?",
+      description: "W razie problemów lub pytań, dołącz do naszego serwera Discord i utwórz ticket w celu otrzymania wsparcia od naszego zespołu.",
+      joinDiscord: "DOŁĄCZ NA DISCORD",
+      createTicket: "UTWÓRZ TICKET",
+      close: "ZAMKNIJ"
     }
   },
   en: {
@@ -223,6 +230,13 @@ export const translations = {
       terms: "TERMS",
       privacy: "PRIVACY",
       support: "SUPPORT"
+    },
+    help: {
+      title: "Need Help?",
+      description: "If you encounter any issues or have questions, join our Discord server and create a ticket to get support from our team.",
+      joinDiscord: "JOIN DISCORD",
+      createTicket: "CREATE TICKET",
+      close: "CLOSE"
     }
   }
 };
