@@ -94,7 +94,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <span className="font-mono text-xs text-muted-foreground">{t.footer.copyright}</span>
           </div>
           <div className="flex gap-6 text-xs font-mono text-muted-foreground">
-            <a href="#" className="hover:text-primary transition-colors">{t.footer.terms}</a>
+            <Link href="/terms" className="hover:text-primary transition-colors cursor-pointer">
+              {t.footer.terms}
+            </Link>
             <Link href="/privacy" className="hover:text-primary transition-colors cursor-pointer">
               {t.footer.privacy}
             </Link>
