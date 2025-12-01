@@ -57,7 +57,8 @@ export default function Home() {
       accentColor: "secondary" as const,
       name: "MambaReceipts (Monthly)",
       discordLink: "https://discord.gg/HxGrw2Rf99",
-      stripeLink: "https://buy.stripe.com/9B600k7NwbhLdTXdJugEg02"
+      stripeLink: "https://buy.stripe.com/9B600k7NwbhLdTXdJugEg02",
+      requiresDiscordBeforePurchase: true
     },
     {
       id: "receipts-year" as ProductId,
@@ -68,7 +69,8 @@ export default function Home() {
       features: t.products.receiptsYear.features,
       accentColor: "secondary" as const,
       name: "MambaReceipts (Annual)",
-      discordLink: "https://discord.gg/HxGrw2Rf99"
+      discordLink: "https://discord.gg/HxGrw2Rf99",
+      requiresDiscordBeforePurchase: true
     }
   ];
 
@@ -211,6 +213,7 @@ export default function Home() {
                   accentColor={selectedProductData.accentColor}
                   discordLink={selectedProductData.discordLink}
                   stripeLink={selectedProductData.stripeLink}
+                  requiresDiscordBeforePurchase={(selectedProductData as any).requiresDiscordBeforePurchase}
                   onBuy={() => handleBuy({
                     name: selectedProductData.name,
                     price: selectedProductData.price,

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, ArrowRight, MessageCircle } from "lucide-react";
+import { Check, ArrowRight, MessageCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
@@ -14,6 +14,7 @@ interface ProductCardProps {
   onBuy: () => void;
   discordLink?: string;
   stripeLink?: string;
+  requiresDiscordBeforePurchase?: boolean;
 }
 
 export function ProductCard({ 
@@ -26,7 +27,8 @@ export function ProductCard({
   accentColor = "primary",
   onBuy,
   discordLink,
-  stripeLink
+  stripeLink,
+  requiresDiscordBeforePurchase
 }: ProductCardProps) {
   const handlePurchaseClick = () => {
     if (stripeLink) {
@@ -100,6 +102,16 @@ export function ProductCard({
                   />
                 )}
               </div>
+            </div>
+          )}
+
+          {requiresDiscordBeforePurchase && (
+            <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/5 border border-amber-500/40 rounded-lg p-4">
+              <h3 className="text-sm font-display font-bold text-amber-100 mb-2 flex items-center gap-2 uppercase tracking-wider">
+                <AlertCircle className="h-4 w-4 text-amber-500" />
+                Ważne Ostrzeżenie
+              </h3>
+              <p className="text-xs text-amber-100/80">Przed zakupem musisz dołączyć na nasz serwer Discord, aby otrzymać dostęp do produktu i wsparcia technicznego.</p>
             </div>
           )}
 
