@@ -71,7 +71,7 @@ export function ProductCard({
           {(video || image) && (
             <div>
               <h3 className="text-sm font-display font-bold text-white mb-3 uppercase tracking-wider">Podgląd</h3>
-              <div className="h-40 overflow-hidden relative rounded-lg border border-white/10">
+              <div className="min-h-80 overflow-hidden relative rounded-lg border border-white/10">
                 <div className={`absolute inset-0 bg-gradient-to-t from-background to-transparent z-10`} />
                 {video ? (
                   <video 
@@ -79,13 +79,13 @@ export function ProductCard({
                     autoPlay 
                     muted 
                     loop 
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-110 opacity-80 hover:opacity-100" 
+                    className="w-full h-full object-contain transition-transform duration-500 hover:scale-105" 
                   />
                 ) : (
                   <img 
                     src={image} 
                     alt={title} 
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-110 opacity-80 hover:opacity-100" 
+                    className="w-full h-full object-contain transition-transform duration-500 hover:scale-105" 
                   />
                 )}
               </div>
