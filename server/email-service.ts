@@ -78,7 +78,7 @@ export async function sendAccessCodeEmail(email: string, code: string, generator
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "noreply@mamba.services",
+        from: "onboarding@resend.dev",
         to: email,
         subject: emailContent.subject,
         html: emailContent.html,
