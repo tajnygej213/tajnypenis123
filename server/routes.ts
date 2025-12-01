@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertOrderSchema, insertDiscordAccessSchema } from "@shared/schema";
 import { grantDiscordRole } from "./discord-bot";
 import { sendAccessCodeEmail } from "./email-service";
+import { setupStripeWebhook } from "./stripe-webhook";
 import { z } from "zod";
 
 // Validate status values
@@ -21,6 +22,9 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Setup Stripe webhook
+  await setupStripeWebhook(app);
+
   // Auth endpoints
   app.post("/api/auth/signup", async (req, res) => {
     try {
@@ -331,16 +335,17 @@ export async function registerRoutes(
     }
   });
 
-  // Claim access code endpoint
+  // Claim access code endpoint (temp - for instant display, real code sent via webhook)
   app.post("/api/access-code/claim", async (req, res) => {
     try {
-      const { email, productId } = req.body;
+      const { email, productId, orderId } = req.body;
       
       if (!email || !productId) {
         res.status(400).json({ error: "Email and productId required" });
         return;
       }
 
+      // Get a code preview (will be marked as used by webhook after payment confirmed)
       const productType = productId.includes("receipts") ? "receipts" : "obywatel";
       const code = await storage.getUnusedAccessCode(productType);
       
@@ -350,15 +355,12 @@ export async function registerRoutes(
       }
 
       const generatorLink = "https://mambagen.up.railway.app/gen.html";
-      const usedCode = await storage.markCodeAsUsed(code.code, email.toLowerCase());
-      
-      // Send email with code
-      await sendAccessCodeEmail(email.toLowerCase(), code.code, generatorLink);
       
       res.json({
         success: true,
         code: code.code,
         generatorLink: generatorLink,
+        note: "Code will be confirmed after payment verification",
       });
     } catch (error: any) {
       console.error("Access code claim error:", error);
