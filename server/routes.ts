@@ -10,11 +10,49 @@ const statusSchema = z.enum(["pending", "paid", "failed"]);
 
 // Email validation
 const emailSchema = z.string().email().toLowerCase();
+const authSchema = z.object({
+  email: z.string().email("Invalid email").toLowerCase(),
+  password: z.string().min(6, "Password must be 6+ characters"),
+});
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Auth endpoints
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      const { email, password } = authSchema.parse(req.body);
+      const existing = await storage.getUserByEmail(email);
+      if (existing) {
+        res.status(400).json({ error: "Email już istnieje" });
+        return;
+      }
+      const user = await storage.createUser({ email, password });
+      res.status(201).json({ id: user.id, email: user.email });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || "Błąd rejestracji" });
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password } = authSchema.parse(req.body);
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        res.status(401).json({ error: "Niepoprawny email lub hasło" });
+        return;
+      }
+      const valid = await storage.verifyPassword(email, password);
+      if (!valid) {
+        res.status(401).json({ error: "Niepoprawny email lub hasło" });
+        return;
+      }
+      res.json({ id: user.id, email: user.email });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || "Błąd logowania" });
+    }
+  });
   // Create order endpoint
   app.post("/api/orders", async (req, res) => {
     try {

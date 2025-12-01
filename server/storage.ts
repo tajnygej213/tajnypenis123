@@ -6,9 +6,9 @@ const SALT_ROUNDS = 12;
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  verifyPassword(username: string, password: string): Promise<boolean>;
+  verifyPassword(email: string, password: string): Promise<boolean>;
   createOrder(order: InsertOrder): Promise<Order>;
   getOrder(id: string): Promise<Order | undefined>;
   getOrderByEmail(email: string): Promise<Order[]>;
@@ -31,9 +31,9 @@ export class MemStorage implements IStorage {
     return this.users.get(id);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
+  async getUserByEmail(email: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(
-      (user) => user.username === username,
+      (user) => user.email === email,
     );
   }
 
@@ -51,8 +51,8 @@ export class MemStorage implements IStorage {
     return user;
   }
 
-  async verifyPassword(username: string, password: string): Promise<boolean> {
-    const user = await this.getUserByUsername(username);
+  async verifyPassword(email: string, password: string): Promise<boolean> {
+    const user = await this.getUserByEmail(email);
     if (!user) return false;
     try {
       return await bcrypt.compare(password, user.password);

@@ -9,11 +9,13 @@ import Home from "@/pages/home";
 import Dashboard from "@/pages/dashboard";
 import Privacy from "@/pages/privacy";
 import Terms from "@/pages/terms";
+import Auth from "@/pages/auth";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/auth" component={Auth} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
