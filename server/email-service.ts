@@ -1,3 +1,62 @@
+export function generateTicketEmail(email: string): { subject: string; html: string } {
+  return {
+    subject: "Otwórz Ticket - Mamba Obywatel 🐍",
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: 'Inter', Arial, sans-serif; background: #000; color: #fff; line-height: 1.6; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #8eb34f; margin-bottom: 30px; }
+            .logo { font-size: 28px; font-weight: bold; color: #8eb34f; text-shadow: 0 0 10px rgba(142, 179, 79, 0.5); }
+            .content { background: #1a1a1a; padding: 30px; border: 1px solid #333; border-radius: 8px; margin-bottom: 20px; }
+            .thank-you { font-size: 24px; color: #8eb34f; margin-bottom: 20px; font-weight: bold; }
+            .ticket-section { background: #0a0a0a; border: 2px solid #8eb34f; border-radius: 6px; padding: 20px; margin: 20px 0; text-align: center; }
+            .instruction { font-size: 18px; color: #8eb34f; font-weight: bold; margin: 15px 0; }
+            .button { display: inline-block; background: #8eb34f; color: #000; padding: 15px 30px; border-radius: 6px; text-decoration: none; font-weight: bold; margin-top: 15px; }
+            .footer { text-align: center; color: #666; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #333; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">🐍 MAMBA OBYWATEL</div>
+            </div>
+            
+            <div class="content">
+              <div class="thank-you">Dziękujemy za Twoją transakcję!</div>
+              
+              <p>Twoje zamówienie MambaObywatel zostało potwierdzone. Aby aktywować dostęp, musisz otworzyć ticket na naszym serwerze Discord.</p>
+              
+              <div class="ticket-section">
+                <div class="instruction">📋 Instrukcja aktywacji:</div>
+                <p style="font-size: 14px; margin: 10px 0;">
+                  1. Dołącz do naszego serwera Discord<br>
+                  2. Przejdź do kanału #tickets<br>
+                  3. Kliknij przycisk "Otwórz Ticket"<br>
+                  4. Wyślij dowód zakupu lub email:<br>
+                  <strong>${email}</strong>
+                </p>
+              </div>
+
+              <p style="color: #999; font-size: 12px;">
+                ⚠️ Nasz zespół obsługi klienta przywróci ci dostęp w ciągu 24 godzin. Jeśli masz pytania, skontaktuj się z nami przez Discord.
+              </p>
+            </div>
+            
+            <div class="footer">
+              <p>© 2025 Mamba Services. Wszystkie prawa zastrzeżone.</p>
+              <p>Email wysłany do: ${email}</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+  };
+}
+
 export function generateReceiptsEmail(email: string, expiresAt: Date): { subject: string; html: string } {
   return {
     subject: "Twój dostęp do MambaReceipts 🐍",
@@ -125,6 +184,45 @@ export function generateAccessCodeEmail(email: string, code: string, generatorLi
       </html>
     `,
   };
+}
+
+export async function sendTicketEmail(email: string): Promise<boolean> {
+  const apiKey = process.env.RESEND_API_KEY;
+  
+  if (!apiKey) {
+    console.warn("[Email] RESEND_API_KEY not configured - email not sent");
+    return false;
+  }
+
+  try {
+    const emailContent = generateTicketEmail(email);
+    
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "onboarding@resend.dev",
+        to: email,
+        subject: emailContent.subject,
+        html: emailContent.html,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("[Email] Failed to send:", error);
+      return false;
+    }
+
+    console.log(`[Email] Successfully sent ticket instructions to ${email}`);
+    return true;
+  } catch (error) {
+    console.error("[Email] Error sending email:", error);
+    return false;
+  }
 }
 
 export async function sendReceiptsEmail(email: string, expiresAt: Date): Promise<boolean> {
