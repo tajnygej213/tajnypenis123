@@ -3,6 +3,12 @@ import { Check, ArrowRight, MessageCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
+interface SellAuthConfig {
+  productId: number;
+  variantId: number;
+  shopId: number;
+}
+
 interface ProductCardProps {
   title: string;
   price: string;
@@ -14,8 +20,7 @@ interface ProductCardProps {
   onBuy: () => void;
   discordLink?: string;
   stripeLink?: string;
-  sellAuthUrl?: string;
-  onSellAuthBuy?: (url: string) => void;
+  sellAuthConfig?: SellAuthConfig;
   requiresDiscordBeforePurchase?: boolean;
 }
 
@@ -30,13 +35,20 @@ export function ProductCard({
   onBuy,
   discordLink,
   stripeLink,
-  sellAuthUrl,
-  onSellAuthBuy,
+  sellAuthConfig,
   requiresDiscordBeforePurchase
 }: ProductCardProps) {
-  const handlePurchaseClick = () => {
-    if (sellAuthUrl && onSellAuthBuy) {
-      onSellAuthBuy(sellAuthUrl);
+  const handlePurchaseClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (sellAuthConfig && window.sellAuthEmbed) {
+      window.sellAuthEmbed.checkout(e.currentTarget, {
+        cart: [{ 
+          productId: sellAuthConfig.productId, 
+          variantId: sellAuthConfig.variantId, 
+          quantity: 1 
+        }],
+        shopId: sellAuthConfig.shopId,
+        modal: true
+      });
     } else if (stripeLink) {
       window.open(stripeLink, '_blank');
     } else {
