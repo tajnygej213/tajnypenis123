@@ -1,3 +1,18 @@
+import nodemailer from "nodemailer";
+
+// Create email transporter
+function getEmailTransporter() {
+  return nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT || "587"),
+    secure: false, // TLS
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+}
+
 export function generateTicketEmail(email: string): { subject: string; html: string } {
   return {
     subject: "Otwórz Ticket - Mamba Obywatel 🐍",
@@ -126,7 +141,7 @@ export function generateReceiptsEmail(email: string, expiresAt: Date): { subject
 
 export function generateAccessCodeEmail(email: string, code: string, generatorLink: string): { subject: string; html: string } {
   return {
-    subject: "Twój kod dostępu do Mamba Services 🐍",
+    subject: "Twój kod dostępu - Mamba Obywatel 🐍",
     html: `
       <!DOCTYPE html>
       <html>
@@ -140,18 +155,18 @@ export function generateAccessCodeEmail(email: string, code: string, generatorLi
             .content { background: #1a1a1a; padding: 30px; border: 1px solid #333; border-radius: 8px; margin-bottom: 20px; }
             .thank-you { font-size: 24px; color: #8eb34f; margin-bottom: 20px; font-weight: bold; }
             .code-box { background: #0a0a0a; border: 2px solid #8eb34f; border-radius: 6px; padding: 20px; margin: 20px 0; text-align: center; }
-            .code { font-size: 24px; font-family: 'Courier New', monospace; font-weight: bold; color: #8eb34f; letter-spacing: 2px; word-break: break-all; }
-            .instructions { background: #1a1a1a; border-left: 4px solid #a855f7; padding: 15px; margin: 20px 0; }
+            .code { font-size: 24px; font-family: 'Courier New', monospace; font-weight: bold; color: #8eb34f; letter-spacing: 2px; }
             .step { margin: 10px 0; font-size: 14px; }
             .step-num { color: #8eb34f; font-weight: bold; }
-            .link { color: #a855f7; text-decoration: none; word-break: break-all; }
+            .link { color: #8eb34f; text-decoration: none; }
+            .instructions { background: #1a1a1a; border-left: 4px solid #8eb34f; padding: 15px; margin: 20px 0; }
             .footer { text-align: center; color: #666; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #333; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">🐍 MAMBA SERVICES</div>
+              <div class="logo">🐍 MAMBA OBYWATEL</div>
             </div>
             
             <div class="content">
@@ -187,118 +202,76 @@ export function generateAccessCodeEmail(email: string, code: string, generatorLi
 }
 
 export async function sendTicketEmail(email: string): Promise<boolean> {
-  const apiKey = process.env.RESEND_API_KEY;
-  
-  if (!apiKey) {
-    console.warn("[Email] RESEND_API_KEY not configured - email not sent");
-    return false;
-  }
-
   try {
-    const emailContent = generateTicketEmail(email);
-    
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "onboarding@resend.dev",
-        to: email,
-        subject: emailContent.subject,
-        html: emailContent.html,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      console.error("[Email] Failed to send:", error);
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.warn("[Email] Gmail credentials not configured");
       return false;
     }
 
-    console.log(`[Email] Successfully sent ticket instructions to ${email}`);
+    const emailContent = generateTicketEmail(email);
+    const transporter = getEmailTransporter();
+
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: emailContent.subject,
+      html: emailContent.html,
+    });
+
+    console.log(`[Email] ✅ Ticket email sent to ${email}, messageId: ${info.messageId}`);
     return true;
   } catch (error) {
-    console.error("[Email] Error sending email:", error);
+    console.error("[Email] Failed to send ticket email:", error);
     return false;
   }
 }
 
 export async function sendReceiptsEmail(email: string, expiresAt: Date): Promise<boolean> {
-  const apiKey = process.env.RESEND_API_KEY;
-  
-  if (!apiKey) {
-    console.warn("[Email] RESEND_API_KEY not configured - email not sent");
-    return false;
-  }
-
   try {
-    const emailContent = generateReceiptsEmail(email, expiresAt);
-    
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "onboarding@resend.dev",
-        to: email,
-        subject: emailContent.subject,
-        html: emailContent.html,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      console.error("[Email] Failed to send:", error);
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.warn("[Email] Gmail credentials not configured");
       return false;
     }
 
-    console.log(`[Email] Successfully sent Receipts instructions to ${email}`);
+    const emailContent = generateReceiptsEmail(email, expiresAt);
+    const transporter = getEmailTransporter();
+
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: emailContent.subject,
+      html: emailContent.html,
+    });
+
+    console.log(`[Email] ✅ Receipts email sent to ${email}, messageId: ${info.messageId}`);
     return true;
   } catch (error) {
-    console.error("[Email] Error sending email:", error);
+    console.error("[Email] Failed to send receipts email:", error);
     return false;
   }
 }
 
 export async function sendAccessCodeEmail(email: string, code: string, generatorLink: string): Promise<boolean> {
-  const apiKey = process.env.RESEND_API_KEY;
-  
-  if (!apiKey) {
-    console.warn("[Email] RESEND_API_KEY not configured - email not sent");
-    return false;
-  }
-
   try {
-    const emailContent = generateAccessCodeEmail(email, code, generatorLink);
-    
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "onboarding@resend.dev",
-        to: email,
-        subject: emailContent.subject,
-        html: emailContent.html,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      console.error("[Email] Failed to send:", error);
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.warn("[Email] Gmail credentials not configured");
       return false;
     }
 
-    console.log(`[Email] Successfully sent access code to ${email}`);
+    const emailContent = generateAccessCodeEmail(email, code, generatorLink);
+    const transporter = getEmailTransporter();
+
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: emailContent.subject,
+      html: emailContent.html,
+    });
+
+    console.log(`[Email] ✅ Access code email sent to ${email} with code ${code}, messageId: ${info.messageId}`);
     return true;
   } catch (error) {
-    console.error("[Email] Error sending email:", error);
+    console.error("[Email] Failed to send access code email:", error);
     return false;
   }
 }
