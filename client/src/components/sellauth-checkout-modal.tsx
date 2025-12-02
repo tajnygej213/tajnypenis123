@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 
@@ -10,6 +10,7 @@ interface SellAuthCheckoutModalProps {
 
 export function SellAuthCheckoutModal({ open, onOpenChange, checkoutUrl }: SellAuthCheckoutModalProps) {
   const [isLoading, setIsLoading] = useState(true);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const shouldRender = open && checkoutUrl && checkoutUrl.length > 0;
 
@@ -17,15 +18,28 @@ export function SellAuthCheckoutModal({ open, onOpenChange, checkoutUrl }: SellA
     if (shouldRender) {
       setIsLoading(true);
       document.body.style.overflow = "hidden";
+      
+      timeoutRef.current = setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
     } else {
       document.body.style.overflow = "unset";
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     }
     return () => {
       document.body.style.overflow = "unset";
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     };
   }, [shouldRender]);
 
   const handleIframeLoad = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
     setIsLoading(false);
   };
 
@@ -67,8 +81,16 @@ export function SellAuthCheckoutModal({ open, onOpenChange, checkoutUrl }: SellA
               <X className="h-7 w-7" />
             </button>
 
+            <iframe
+              src={checkoutUrl}
+              onLoad={handleIframeLoad}
+              className="w-full h-full border-0"
+              title="Checkout"
+              allow="payment"
+            />
+
             {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center bg-[#0a0f1f]">
                 <div
                   className="w-12 h-12 rounded-full animate-spin"
                   style={{
@@ -78,15 +100,6 @@ export function SellAuthCheckoutModal({ open, onOpenChange, checkoutUrl }: SellA
                 />
               </div>
             )}
-
-            <iframe
-              src={checkoutUrl}
-              onLoad={handleIframeLoad}
-              className="w-full h-full border-0"
-              style={{ display: isLoading ? "none" : "block" }}
-              title="Checkout"
-              allow="payment"
-            />
           </motion.div>
         </motion.div>
       )}
