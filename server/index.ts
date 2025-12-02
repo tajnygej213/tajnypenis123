@@ -174,6 +174,10 @@ async function initializeAccessCodes() {
 
 // --- SETUP STRIPE WEBHOOK ---
 setupStripeWebhook(app);
+console.log("✅ Stripe webhook endpoints mounted:");
+console.log(" - POST /api/webhooks/stripe");
+console.log(" - POST /api/test/webhook");
+
 
 // --- Start app ---
 (async () => {
