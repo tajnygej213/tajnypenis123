@@ -2,15 +2,37 @@ import nodemailer from "nodemailer";
 
 // Create email transporter
 function getEmailTransporter() {
-  return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT || "587"),
+  const host = process.env.EMAIL_HOST || "smtp.gmail.com";
+  const port = parseInt(process.env.EMAIL_PORT || "587");
+  const user = process.env.EMAIL_USER;
+  const pass = process.env.EMAIL_PASS;
+  
+  if (!user || !pass) {
+    console.error("❌ Email credentials missing - EMAIL_USER:", user ? "✓" : "✗", "EMAIL_PASS:", pass ? "✓" : "✗");
+  } else {
+    console.log("[Email] Credentials found, creating transporter for:", user);
+  }
+  
+  const transporter = nodemailer.createTransport({
+    host,
+    port,
     secure: false, // TLS
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+      user,
+      pass,
     },
   });
+  
+  // Verify connection immediately
+  transporter.verify((error, success) => {
+    if (error) {
+      console.error("[Email] ❌ SMTP connection failed:", error);
+    } else if (success) {
+      console.log("[Email] ✅ SMTP connection verified");
+    }
+  });
+  
+  return transporter;
 }
 
 export function generateTicketEmail(email: string): { subject: string; html: string } {
