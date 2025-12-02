@@ -34,20 +34,26 @@ const STRIPE_LINK_MAPPING: { [key: string]: { type: "obywatel" | "receipts"; tie
 export async function setupStripeWebhook(app: Express): Promise<void> {
   // Webhook dla Stripe - sprawdza czy płatność przeszła
   app.post("/api/webhooks/stripe", async (req, res) => {
-    console.log("[Stripe] Webhook received!");
+    console.log("🔔 [WEBHOOK] Stripe webhook received!");
+    console.log("🔔 [WEBHOOK] Headers:", req.headers);
+    console.log("🔔 [WEBHOOK] Body length:", (req.rawBody as Buffer)?.length || 0);
+    
     try {
       // Parse raw body as JSON
       let event;
       try {
         const body = req.rawBody as Buffer;
+        if (!body) {
+          console.error("🔔 [WEBHOOK] No raw body!");
+          res.status(400).json({ error: "No body" });
+          return;
+        }
         const bodyStr = body.toString("utf-8");
         event = JSON.parse(bodyStr);
-        console.log("[Stripe] Event received, type:", event.type);
-        
-        // TODO: Re-enable signature verification when DNS is properly configured
-        // For now, accepting all events from emamba.pl during DNS setup
+        console.log("🔔 [WEBHOOK] Event parsed, type:", event.type);
+        console.log("🔔 [WEBHOOK] Event data:", JSON.stringify(event, null, 2).substring(0, 500));
       } catch (error) {
-        console.error("[Stripe] Failed to parse webhook body:", error);
+        console.error("🔔 [WEBHOOK] Failed to parse webhook body:", error);
         res.status(400).json({ error: "Invalid JSON" });
         return;
       }
