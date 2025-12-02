@@ -9,20 +9,22 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { accessCodes } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { setupStripeWebhook } from "./stripe";
 
 const app = express();
 const httpServer = createServer(app);
 
-// --- Middleware ---
+// --- Middleware JSON/URLencoded ---
 app.use(
   express.json({
     verify: (req, _res, buf) => {
       (req as any).rawBody = buf;
     },
-  }),
+  })
 );
 app.use(express.urlencoded({ extended: false }));
 
+// --- Logger ---
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -33,7 +35,7 @@ export function log(message: string, source = "express") {
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
-// Logger dla /api
+// Logger tylko dla /api
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -68,7 +70,7 @@ declare module "http" {
   }
 }
 
-// --- Database init ---
+// --- Database initialization ---
 async function initializeDatabase() {
   if (!process.env.DATABASE_URL) {
     console.log("⚠️  DATABASE_URL not set");
@@ -170,6 +172,9 @@ async function initializeAccessCodes() {
   console.log(`[init] Access codes pre-loaded from database`);
 }
 
+// --- SETUP STRIPE WEBHOOK ---
+setupStripeWebhook(app);
+
 // --- Start app ---
 (async () => {
   await initializeDatabase();
@@ -182,6 +187,7 @@ async function initializeAccessCodes() {
     console.warn("Discord bot failed to start (optional):", error);
   }
 
+  // Error handler
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
@@ -189,6 +195,7 @@ async function initializeAccessCodes() {
     throw err;
   });
 
+  // Serve static in production / Vite in dev
   if (process.env.NODE_ENV === "production") {
     serveStatic(app);
   } else {
