@@ -14,6 +14,8 @@ interface ProductCardProps {
   onBuy: () => void;
   discordLink?: string;
   stripeLink?: string;
+  sellAuthUrl?: string;
+  onSellAuthBuy?: (url: string) => void;
   requiresDiscordBeforePurchase?: boolean;
 }
 
@@ -28,10 +30,14 @@ export function ProductCard({
   onBuy,
   discordLink,
   stripeLink,
+  sellAuthUrl,
+  onSellAuthBuy,
   requiresDiscordBeforePurchase
 }: ProductCardProps) {
   const handlePurchaseClick = () => {
-    if (stripeLink) {
+    if (sellAuthUrl && onSellAuthBuy) {
+      onSellAuthBuy(sellAuthUrl);
+    } else if (stripeLink) {
       window.open(stripeLink, '_blank');
     } else {
       onBuy();
@@ -139,7 +145,7 @@ export function ProductCard({
             className={`w-full font-mono font-bold tracking-wider uppercase ${buttonClass}`}
             onClick={handlePurchaseClick}
           >
-            {stripeLink ? "Buy Now" : "Purchase Access"} <ArrowRight className="ml-2 h-4 w-4" />
+            Buy Now <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </CardFooter>
       </Card>
