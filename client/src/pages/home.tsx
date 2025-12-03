@@ -53,12 +53,11 @@ export default function Home() {
       title: t.products.receiptsMonth.title,
       price: t.products.receiptsMonth.price,
       description: t.products.receiptsMonth.description,
-      video: receiptsVideo,
       features: t.products.receiptsMonth.features,
-      accentColor: "secondary" as const,
-      name: "MambaReceipts (Monthly)",
-      discordLink: "https://discord.gg/W5VnefAuuz",
-      discordOnlyPurchase: true
+      accentColor: "primary" as const,
+      name: "MambaObywatel (10 Pack)",
+      discordLink: "https://discord.gg/Ka5TQuWN6s",
+      checkoutLink: "https://mambaservice.mysellauth.com/product/mobywatelapka10"
     },
     {
       id: "receipts-year" as ProductId,
@@ -68,7 +67,7 @@ export default function Home() {
       video: receiptsVideo,
       features: t.products.receiptsYear.features,
       accentColor: "secondary" as const,
-      name: "MambaReceipts (Annual)",
+      name: "MambaReceipts",
       discordLink: "https://discord.gg/W5VnefAuuz",
       discordOnlyPurchase: true
     }
