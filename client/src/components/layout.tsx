@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
-import { LanguageSwitcher } from "@/components/language-switcher";
 import { DiscordModal } from "@/components/discord-modal";
 import { HelpModal } from "@/components/help-modal";
 import { AccountMenu } from "@/components/account-menu";
@@ -60,7 +59,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8">
             <NavContent />
-            <LanguageSwitcher />
             {isLoggedIn ? (
               <AccountMenu />
             ) : (
@@ -77,7 +75,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Mobile Nav */}
           <div className="flex md:hidden gap-2">
-            <LanguageSwitcher />
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
