@@ -51,7 +51,7 @@ export const translations = {
       obywatelPro: {
         title: "MambaObywatel",
         price: "200 zł",
-        description: "Kompleksowy pakiet generatora z zaawansowanymi funkcjami. Pełny zestaw narzędzi automatyzacji.",
+        description: "Kompleksowy pakiet generatora z zaawansowanymi funkcjami. Pełny zestaw narzędzi automatyzacji. Dostęp na miesiąc.",
         features: [
           "Pełny dostęp do generatora",
           "Zaawansowana konfiguracja",
