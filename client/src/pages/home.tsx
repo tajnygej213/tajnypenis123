@@ -35,7 +35,7 @@ export default function Home() {
       accentColor: "primary" as const,
       name: "fObywatel (App)",
       discordLink: "https://discord.gg/Ka5TQuWN6s",
-      checkoutLink: "https://mamba.sellhub.cx/product/MambaApka/"
+      checkoutLink: "https://mambaservice.mysellauth.com/product/mambaobywatelapka"
     },
     {
       id: "obywatel-pro" as ProductId,
